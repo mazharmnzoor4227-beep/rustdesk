@@ -88,12 +88,95 @@ class _ConnectionPageState extends State<ConnectionPage> {
             Obx(() => _buildUpdateUI(stateGlobal.updateUrl.value)),
           _buildRemoteIDTextField(),
         ])),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 18, bottom: 2, left: 4),
+            child: Text(translate('My Devices'),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          ),
+        ),
         SliverFillRemaining(
           hasScrollBody: true,
           child: PeerTabPage(),
         )
       ],
     ).marginOnly(top: 2, left: 10, right: 10);
+  }
+
+  /// DoorDesk shortcut tiles under the connect hero card.
+  Widget _buildShortcutTiles() {
+    final showHelp = isAndroid && !bind.isOutgoingOnly();
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(children: [
+        Expanded(
+          child: _shortcutTile(
+            icon: Icons.folder_open,
+            label: translate('Transfer Files'),
+            subtitle: translate('Send files to a device'),
+            onTap: () =>
+                connect(context, _idController.id, isFileTransfer: true),
+          ),
+        ),
+        if (showHelp) const SizedBox(width: 12),
+        if (showHelp)
+          Expanded(
+            child: _shortcutTile(
+              icon: Icons.volunteer_activism,
+              label: translate('Family Help'),
+              subtitle: translate('Show my ID'),
+              onTap: () => HomePage.homeKey.currentState?.goToServerPage(),
+            ),
+          ),
+      ]),
+    );
+  }
+
+  Widget _shortcutTile(
+      {required IconData icon,
+      required String label,
+      required String subtitle,
+      required VoidCallback onTap}) {
+    return Container(
+      decoration: MyTheme.ddCardDecoration(context, radius: 18),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                    gradient: MyTheme.ddPrimaryGradient,
+                    borderRadius: BorderRadius.circular(12)),
+                child: Icon(icon, color: MyTheme.ddOnAccent, size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 11, color: MyTheme.darkGray)),
+                  ],
+                ),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
   }
 
   /// Callback for the connect button.
@@ -149,14 +232,11 @@ class _ConnectionPageState extends State<ConnectionPage> {
   /// Search for a peer and connect to it if the id exists.
   Widget _buildRemoteIDTextField() {
     final w = SizedBox(
-      height: 84,
+      height: 96,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.all(Radius.circular(13)),
-          ),
+        child: Container(
+          decoration: MyTheme.ddHeroDecoration(context),
           child: Row(
             children: <Widget>[
               Expanded(
@@ -230,11 +310,13 @@ class _ConnectionPageState extends State<ConnectionPage> {
                         onChanged: (String text) {
                           _idController.id = text;
                         },
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'WorkSans',
                           fontWeight: FontWeight.bold,
                           fontSize: 30,
-                          color: MyTheme.idColor,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black87,
                         ),
                         decoration: InputDecoration(
                           labelText: translate('Remote ID'),
@@ -334,15 +416,42 @@ class _ConnectionPageState extends State<ConnectionPage> {
                         },
                         icon: Icon(Icons.clear, color: MyTheme.darkGray)),
                   )),
-              SizedBox(
-                width: 60,
-                height: 60,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_forward,
-                      color: MyTheme.darkGray, size: 45),
-                  onPressed: onConnect,
+              Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: MyTheme.ddPrimaryGradient,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                        color: MyTheme.accent.withOpacity(0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4)),
+                  ],
                 ),
-              ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: onConnect,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(translate('Connect'),
+                              style: const TextStyle(
+                                  color: MyTheme.ddOnAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15)),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.arrow_forward,
+                              color: MyTheme.ddOnAccent, size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ).marginOnly(right: 10),
             ],
           ),
         ),
@@ -352,7 +461,8 @@ class _ConnectionPageState extends State<ConnectionPage> {
       if (isWebDesktop)
         getConnectionPageTitle(context, true)
             .marginOnly(bottom: 10, top: 15, left: 12),
-      w
+      w,
+      _buildShortcutTiles(),
     ]);
     return Align(
         alignment: Alignment.topCenter,
