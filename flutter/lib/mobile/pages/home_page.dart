@@ -39,6 +39,16 @@ class HomePageState extends State<HomePage> {
     });
   }
 
+  // DoorDesk: jump to the Share (server) tab, e.g. from Family Help.
+  void goToServerPage() {
+    final idx = _pages.indexWhere((p) => p is ServerPage);
+    if (idx >= 0 && idx != _selectedIndex) {
+      setState(() {
+        _selectedIndex = idx;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -79,31 +89,115 @@ class HomePageState extends State<HomePage> {
             title: appTitle(),
             actions: _pages.elementAt(_selectedIndex).appBarActions,
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            key: navigationBarKey,
-            items: _pages
-                .map((page) =>
-                    BottomNavigationBarItem(icon: page.icon, label: page.title))
-                .toList(),
-            currentIndex: _selectedIndex,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: MyTheme.accent, //
-            unselectedItemColor: MyTheme.darkGray,
-            onTap: (index) => setState(() {
-              // close chat overlay when go chat page
-              if (_selectedIndex != index) {
-                _selectedIndex = index;
-                if (isChatPageCurrentTab) {
-                  gFFI.chatModel.hideChatIconOverlay();
-                  gFFI.chatModel.hideChatWindowOverlay();
-                  gFFI.chatModel.mobileClearClientUnread(
-                      gFFI.chatModel.currentKey.connId);
-                }
-              }
-            }),
-          ),
+          bottomNavigationBar: _buildBottomNav(),
           body: _pages.elementAt(_selectedIndex),
         ));
+  }
+
+  void _onNavTap(int index) {
+    setState(() {
+      // close chat overlay when go chat page
+      if (_selectedIndex != index) {
+        _selectedIndex = index;
+        if (isChatPageCurrentTab) {
+          gFFI.chatModel.hideChatIconOverlay();
+          gFFI.chatModel.hideChatWindowOverlay();
+          gFFI.chatModel
+              .mobileClearClientUnread(gFFI.chatModel.currentKey.connId);
+        }
+      }
+    });
+  }
+
+  // DoorDesk bottom navigation: dark/light surface with a sliding
+  // gradient pill behind the active tab.
+  Widget _buildBottomNav() {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      key: navigationBarKey,
+      decoration: BoxDecoration(
+        color: dark ? const Color(0xFF101215) : Colors.white,
+        border: Border(
+            top: BorderSide(
+                color: MyTheme.accent.withOpacity(dark ? 0.18 : 0.35),
+                width: 1)),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(dark ? 0.35 : 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, -4)),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 62,
+          child: LayoutBuilder(builder: (context, constraints) {
+            final tabWidth = constraints.maxWidth / _pages.length;
+            return Stack(children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
+                left: tabWidth * _selectedIndex + 8,
+                top: 7,
+                width: tabWidth - 16,
+                height: 48,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: MyTheme.ddPrimaryGradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                          color: MyTheme.accent.withOpacity(0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3)),
+                    ],
+                  ),
+                ),
+              ),
+              Row(
+                children: _pages.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final page = entry.value;
+                  final selected = i == _selectedIndex;
+                  final color =
+                      selected ? MyTheme.ddOnAccent : MyTheme.darkGray;
+                  final iconWidget = page.icon;
+                  final IconData? iconData =
+                      iconWidget is Icon ? iconWidget.icon : null;
+                  return Expanded(
+                    child: InkWell(
+                      onTap: () => _onNavTap(i),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          iconData != null
+                              ? Icon(iconData, color: color, size: 24)
+                              : IconTheme(
+                                  data:
+                                      IconThemeData(color: color, size: 24),
+                                  child: iconWidget),
+                          const SizedBox(height: 2),
+                          Text(page.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: color,
+                                  fontSize: 11,
+                                  fontWeight: selected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal)),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ]);
+          }),
+        ),
+      ),
+    );
   }
 
   Widget appTitle() {
@@ -150,7 +244,29 @@ class HomePageState extends State<HomePage> {
         ],
       );
     }
-    return Text(bind.mainGetAppNameSync());
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            gradient: MyTheme.ddPrimaryGradient,
+            borderRadius: BorderRadius.circular(9),
+            boxShadow: [
+              BoxShadow(
+                  color: MyTheme.accent.withOpacity(0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2)),
+            ],
+          ),
+          child: const Icon(Icons.monitor,
+              size: 18, color: MyTheme.ddOnAccent),
+        ),
+        const SizedBox(width: 9),
+        Text(bind.mainGetAppNameSync()),
+      ],
+    );
   }
 }
 
