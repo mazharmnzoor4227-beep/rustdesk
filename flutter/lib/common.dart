@@ -452,7 +452,7 @@ class MyTheme {
     scaffoldBackgroundColor: Color(0xFFF5F6F1),
     dialogBackgroundColor: Colors.white,
     appBarTheme: AppBarTheme(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFFFFFF),
       elevation: 0,
       shadowColor: Colors.transparent,
     ),
