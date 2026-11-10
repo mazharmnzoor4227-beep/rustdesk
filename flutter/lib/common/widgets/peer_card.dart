@@ -85,6 +85,19 @@ class _PeerCardState extends State<_PeerCard>
 
   Widget _buildPortrait() {
     final peer = super.widget.peer;
+    if (isMobile) {
+      return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          decoration: MyTheme.ddCardDecoration(context),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(MyTheme.ddCardRadius),
+            child: gestureDetector(
+              child: Container(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
+                  child: _buildPeerTile(context, peer, null)),
+            ),
+          ));
+    }
     return Card(
         margin: EdgeInsets.symmetric(horizontal: 2),
         child: gestureDetector(
@@ -92,6 +105,98 @@ class _PeerCardState extends State<_PeerCard>
               padding: EdgeInsets.only(left: 12, top: 8, bottom: 8),
               child: _buildPeerTile(context, peer, null)),
         ));
+  }
+
+  // DoorDesk: circular glossy avatar with the peer initial and a
+  // small platform badge, used by the mobile portrait card.
+  Widget _ddAvatar(Peer peer) {
+    final base = str2color('${peer.id}${peer.platform}', 0x7f);
+    final label = peer.alias.isNotEmpty
+        ? peer.alias
+        : (peer.hostname.isNotEmpty ? peer.hostname : peer.id);
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [base.withOpacity(0.95), base.withOpacity(0.6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: Colors.white.withOpacity(0.22), width: 1),
+        boxShadow: [
+          BoxShadow(
+              color: base.withOpacity(0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: Text(
+              label.isEmpty ? '?' : label[0].toUpperCase(),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).scaffoldBackgroundColor,
+              ),
+              padding: const EdgeInsets.all(2),
+              child: getPlatformImage(peer.platform, size: 14),
+            ),
+          ),
+          if (_shouldBuildPasswordIcon(peer))
+            const Positioned(
+              top: 1,
+              left: 1,
+              child: Icon(Icons.key, size: 8, color: Colors.white),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // DoorDesk: gradient Connect pill used by the mobile portrait card.
+  Widget _ddConnectPill(Peer peer) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: MyTheme.ddPrimaryGradient,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+              color: MyTheme.accent.withOpacity(0.30),
+              blurRadius: 10,
+              offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(999),
+          onTap: () => widget.connect(context, peer.id),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Text(translate('Connect'),
+                style: const TextStyle(
+                    color: MyTheme.ddOnAccent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13)),
+          ),
+        ),
+      ),
+    ).marginOnly(left: 8);
   }
 
   Widget _buildLandscape() {
@@ -146,7 +251,9 @@ class _PeerCardState extends State<_PeerCard>
     return Row(
       mainAxisSize: MainAxisSize.max,
       children: [
-        Container(
+        if (isPortrait && isMobile) _ddAvatar(peer),
+        if (!(isPortrait && isMobile))
+          Container(
             decoration: BoxDecoration(
               color: str2color('${peer.id}${peer.platform}', 0x7f),
               borderRadius: isPortrait
@@ -174,7 +281,9 @@ class _PeerCardState extends State<_PeerCard>
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.background,
+              color: (isPortrait && isMobile)
+                  ? Colors.transparent
+                  : Theme.of(context).colorScheme.background,
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(_tileRadius),
                 bottomRight: Radius.circular(_tileRadius),
@@ -191,7 +300,13 @@ class _PeerCardState extends State<_PeerCard>
                             child: Text(
                           peer.alias.isEmpty ? formatID(peer.id) : peer.alias,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                  fontWeight: isPortrait
+                                      ? FontWeight.w600
+                                      : null),
                         )),
                       ]).marginOnly(top: isPortrait ? 0 : 2),
                       Row(
@@ -236,6 +351,10 @@ class _PeerCardState extends State<_PeerCard>
                     ],
                   ).marginOnly(top: 2),
                 ),
+                if (isPortrait &&
+                    isMobile &&
+                    !Provider.of<PeerTabModel>(context).multiSelectionMode)
+                  _ddConnectPill(peer),
                 isPortrait
                     ? checkBoxOrActionMorePortrait(peer)
                     : checkBoxOrActionMoreLandscape(peer, isTile: true),
