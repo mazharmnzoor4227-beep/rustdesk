@@ -734,6 +734,24 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
     final hideSecuritySettings =
         bind.mainGetBuildinOption(key: kOptionHideSecuritySetting) == 'Y';
     final settings = SettingsList(
+      lightTheme: const SettingsThemeData(
+        settingsListBackground: Color(0xFFF5F6F1),
+        settingsSectionBackground: Colors.white,
+        leadingIconsColor: Color(0xFF5E9200),
+        titleTextColor: Color(0xFF5E9200),
+        settingsTileTextColor: Colors.black87,
+        dividerColor: Color(0x14000000),
+      ),
+      darkTheme: const SettingsThemeData(
+        settingsListBackground: Color(0xFF0B0C0E),
+        settingsSectionBackground: Color(0xFF16181D),
+        leadingIconsColor: MyTheme.accent,
+        titleTextColor: MyTheme.accent,
+        settingsTileTextColor: Color(0xFFF2F2F2),
+        tileDescriptionTextColor: Color(0xFFB9BDC4),
+        dividerColor: Color(0x1FFFFFFF),
+        tileHighlightColor: Color(0xFF23262D),
+      ),
       sections: [
         customClientSection,
         if (!bind.isDisableAccount())
@@ -1275,7 +1293,26 @@ class __DisplayPageState extends State<_DisplayPage> {
         title: Text(translate('Display Settings')),
         centerTitle: true,
       ),
-      body: SettingsList(sections: [
+      body: SettingsList(
+      lightTheme: const SettingsThemeData(
+        settingsListBackground: Color(0xFFF5F6F1),
+        settingsSectionBackground: Colors.white,
+        leadingIconsColor: Color(0xFF5E9200),
+        titleTextColor: Color(0xFF5E9200),
+        settingsTileTextColor: Colors.black87,
+        dividerColor: Color(0x14000000),
+      ),
+      darkTheme: const SettingsThemeData(
+        settingsListBackground: Color(0xFF0B0C0E),
+        settingsSectionBackground: Color(0xFF16181D),
+        leadingIconsColor: MyTheme.accent,
+        titleTextColor: MyTheme.accent,
+        settingsTileTextColor: Color(0xFFF2F2F2),
+        tileDescriptionTextColor: Color(0xFFB9BDC4),
+        dividerColor: Color(0x1FFFFFFF),
+        tileHighlightColor: Color(0xFF23262D),
+      ),
+          sections: [
         SettingsSection(
           tiles: [
             _getPopupDialogRadioEntry(
