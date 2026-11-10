@@ -261,18 +261,93 @@ class MyTheme {
   static const Color button = Color(0xFF2C8CFF);
   static const Color hoverBorder = Color(0xFF999999);
 
+  // DoorDesk design tokens (glossy black + lime)
+  static const double ddCardRadius = 22;
+  static const Color ddAccentDeep = Color(0xFF8FE000);
+  static const Color ddDarkBg = Color(0xFF0B0C0E);
+  static const Color ddDarkCardTop = Color(0xFF1A1D21);
+  static const Color ddDarkCardBottom = Color(0xFF101215);
+  static const Color ddOnAccent = Color(0xFF10130A);
+  static const LinearGradient ddPrimaryGradient = LinearGradient(
+    colors: [accent, ddAccentDeep],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Glossy card surface used across the DoorDesk mobile UI.
+  static BoxDecoration ddCardDecoration(BuildContext context,
+      {double radius = ddCardRadius}) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return BoxDecoration(
+      gradient: LinearGradient(
+        colors: dark
+            ? const [ddDarkCardTop, ddDarkCardBottom]
+            : const [Colors.white, Color(0xFFF4F6EE)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ),
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+          color:
+              dark ? accent.withOpacity(0.14) : Colors.black.withOpacity(0.07),
+          width: 1),
+      boxShadow: [
+        BoxShadow(
+            color: Colors.black.withOpacity(dark ? 0.40 : 0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 8)),
+        if (dark)
+          BoxShadow(
+              color: accent.withOpacity(0.05),
+              blurRadius: 24,
+              offset: const Offset(0, 4)),
+      ],
+    );
+  }
+
+  // Hero variant of the glossy card: stronger lime glow.
+  static BoxDecoration ddHeroDecoration(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return BoxDecoration(
+      gradient: LinearGradient(
+        colors: dark
+            ? const [Color(0xFF1E2227), Color(0xFF121417)]
+            : const [Colors.white, Color(0xFFF2F4EA)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(ddCardRadius),
+      border:
+          Border.all(color: accent.withOpacity(dark ? 0.28 : 0.45), width: 1),
+      boxShadow: [
+        BoxShadow(
+            color: accent.withOpacity(dark ? 0.16 : 0.20),
+            blurRadius: 28,
+            offset: const Offset(0, 10)),
+        BoxShadow(
+            color: Colors.black.withOpacity(dark ? 0.45 : 0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 8)),
+      ],
+    );
+  }
+
   // ListTile
   static const ListTileThemeData listTileTheme = ListTileThemeData(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.all(
-        Radius.circular(5),
+        Radius.circular(14),
       ),
     ),
   );
 
   static SwitchThemeData switchTheme() {
     return SwitchThemeData(
-        splashRadius: (isDesktop || isWebDesktop) ? 0 : kRadialReactionRadius);
+        splashRadius: (isDesktop || isWebDesktop) ? 0 : kRadialReactionRadius,
+        thumbColor: MaterialStateProperty.resolveWith((states) =>
+            states.contains(MaterialState.selected) ? accent : null),
+        trackColor: MaterialStateProperty.resolveWith((states) =>
+            states.contains(MaterialState.selected) ? accent50 : null));
   }
 
   static RadioThemeData radioTheme() {
@@ -374,9 +449,11 @@ class MyTheme {
     useMaterial3: false,
     brightness: Brightness.light,
     hoverColor: Color.fromARGB(255, 224, 224, 224),
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: Color(0xFFF5F6F1),
     dialogBackgroundColor: Colors.white,
     appBarTheme: AppBarTheme(
+      backgroundColor: Colors.white,
+      elevation: 0,
       shadowColor: Colors.transparent,
     ),
     dialogTheme: DialogTheme(
@@ -407,7 +484,15 @@ class MyTheme {
         bodyMedium:
             TextStyle(fontSize: 14, color: Colors.black87, height: 1.25),
         labelLarge: TextStyle(fontSize: 16.0, color: MyTheme.accent80)),
-    cardColor: grayBg,
+    cardColor: Colors.white,
+    cardTheme: CardTheme(
+      elevation: 4,
+      shadowColor: Color(0x1F000000),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+      ),
+    ),
     hintColor: Color(0xFFAAAAAA),
     visualDensity: VisualDensity.adaptivePlatformDensity,
     tabBarTheme: const TabBarTheme(
@@ -430,8 +515,9 @@ class MyTheme {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: MyTheme.accent,
+        foregroundColor: ddOnAccent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(14.0),
         ),
       ),
     ),
@@ -472,9 +558,11 @@ class MyTheme {
     useMaterial3: false,
     brightness: Brightness.dark,
     hoverColor: Color.fromARGB(255, 45, 46, 53),
-    scaffoldBackgroundColor: Color(0xFF18191E),
-    dialogBackgroundColor: Color(0xFF18191E),
+    scaffoldBackgroundColor: ddDarkBg,
+    dialogBackgroundColor: Color(0xFF14161A),
     appBarTheme: AppBarTheme(
+      backgroundColor: ddDarkBg,
+      elevation: 0,
       shadowColor: Colors.transparent,
     ),
     dialogTheme: DialogTheme(
@@ -509,7 +597,15 @@ class MyTheme {
         color: accent80,
       ),
     ),
-    cardColor: Color(0xFF24252B),
+    cardColor: Color(0xFF17191D),
+    cardTheme: CardTheme(
+      elevation: 8,
+      shadowColor: Colors.black,
+      color: Color(0xFF17191D),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+      ),
+    ),
     visualDensity: VisualDensity.adaptivePlatformDensity,
     tabBarTheme: const TabBarTheme(
       labelColor: Colors.white70,
@@ -533,11 +629,11 @@ class MyTheme {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: MyTheme.accent,
-        foregroundColor: Colors.white,
+        foregroundColor: ddOnAccent,
         disabledForegroundColor: Colors.white70,
         disabledBackgroundColor: Colors.white10,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(14.0),
         ),
       ),
     ),
