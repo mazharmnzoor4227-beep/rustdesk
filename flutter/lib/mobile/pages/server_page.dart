@@ -472,7 +472,7 @@ class ServerInfo extends StatelessWidget {
     const TextStyle textStyleHeading = TextStyle(
         fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.grey);
     const TextStyle textStyleValue =
-        TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold);
+        TextStyle(fontSize: 29.0, fontWeight: FontWeight.bold);
 
     void copyToClipboard(String value) {
       Clipboard.setData(ClipboardData(text: value));
@@ -884,11 +884,9 @@ class PaddingCard extends StatelessWidget {
     }
     return SizedBox(
         width: double.maxFinite,
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
-          ),
+        child: Container(
           margin: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 0),
+          decoration: MyTheme.ddCardDecoration(context),
           child: Padding(
             padding:
                 const EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
